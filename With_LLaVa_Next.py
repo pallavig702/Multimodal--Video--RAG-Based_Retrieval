@@ -240,7 +240,7 @@ def frame_uris(query_text, max_distance=None, max_results=5):
     return filtered_uris
 
 # Example usage:
-vid_uris = frame_uris("human sitting on a wheel chair", max_distance=1.55)
+vid_uris = frame_uris("human showing signs of mobility disability", max_distance=1.55)
 print(vid_uris)
      
 
@@ -248,104 +248,43 @@ print(vid_uris)
 #LLM Setup
 #####################################################################
 
-api_key='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'
-#userdata = {'OPENAI_API_KEY': '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'}
-userdata = {'OPENAI_API_KEY': api_key}
-pi_key = userdata.get('OPENAI_API_KEY')
-#pi_key = os.getenv('OPENAI_API_KEY')
+############################################################################################
+############################## STEP 1: LOAD THE MODEL ######################################
+############################################################################################
+from transformers import BitsAndBytesConfig, LlavaNextVideoForConditionalGeneration, LlavaNextVideoProcessor #for pre-trained model and processor.
+import torch #for tensor-based computation.
+import csv
+import av #video decoding.
+import numpy as np
 
-# Instantiate the LLM
-gpt4o = ChatOpenAI(model="gpt-4o", temperature = 0.0, api_key=api_key)
-
-# Instantiate the Output Parser
-parser = StrOutputParser()
-
-# Define the Prompt
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are document retrieval assistant that neatly synthesizes and explains the text and images provided by the user from the query {query}"),
-        (
-            "user",
-            [
-                {
-                    "type": "text",
-                    "text": "{texts}"
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {'url': "data:image/jpeg;base64,{image_data_1}"}
-                },
-                {
-                    "type": "text",
-                    "text": "This is a frame from a video, refer to it as a video:"
-                },
-                {
-                    "type": "image_url",
-                    "image_url": {'url': "data:image/jpeg;base64,{image_data_2}"}
-                },
-
-            ],
-        ),
-    ]
+# Model configuration
+# Explanation: Configures the model to load in 4-bit quantization (reducing memory footprint) and uses 16-bit floating point precision for computations.
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_compute_dtype=torch.float16
 )
 
-chain = prompt | gpt4o | parser
+# Model and Processor Initialization:
+# Processor: Prepares inputs for the LLaVA-NeXT model.
+# Model: Loads the video-conditioned text generation model with pre-trained weights.
 
+processor = LlavaNextVideoProcessor.from_pretrained("llava-hf/LLaVA-NeXT-Video-7B-hf")
+model = LlavaNextVideoForConditionalGeneration.from_pretrained(
+    "llava-hf/LLaVA-NeXT-Video-7B-hf",
+    quantization_config=quantization_config,
+    device_map='auto'
+)
 
+############################################################################################
+# Process retrieved frames with LLaVa-Next
+############################################################################################
 
-########################################################################
-#Prompt Setup
-#The below function will take our query, run them through our new retrieval functions, and format our prompt input, which is expecting a dictionary like:
-'''
-{
-  "query": "the user query",
-  "texts": "the retrieved texts",
-  "image_data_1": "The retrieved image, base64 encoded",
-  "image_data_2": "The retrieved frame, base64 encoded",
-}
-Note that for the sake of token consumption, context window, and cost we'll only be passing in two images (the image and a single relevant frame) and the text to the model.
-'''
-########################################################################
-def format_prompt_inputs(user_query):
+for frame in vid_uris: #retrieved_frames:
+    image = Image.open(frame)
+    inputs = processor(images=image, text="Describe the scene?", return_tensors="pt")
+    
+    with torch.no_grad():
+        response = model.generate(**inputs)
 
-    frame = frame_uris(user_query, max_distance=1.55)[0]
-    image = image_uris(user_query, max_distance=1.5)[0]
-    text = text_uris(user_query, max_distance=1.3)
+    print(f"🤖 Frame {frame} Response:", response)
 
-    inputs = {}
-
-    # save the user query
-    inputs['query'] = user_query
-
-    # Insert Text
-    inputs['texts'] = text
-
-    # Encode the first image
-    with open(image, 'rb') as image_file:
-        image_data_1 = image_file.read()
-    inputs['image_data_1'] = base64.b64encode(image_data_1).decode('utf-8')
-
-    # Encode the Frame
-    with open(frame, 'rb') as image_file:
-        image_data_2 = image_file.read()
-    inputs['image_data_2'] = base64.b64encode(image_data_2).decode('utf-8')
-
-    return frame, image, inputs
-
-
-#Full Multimodal RAG
-#Image, Video, Audio, and Text retrieval and LLM processing
-
-query = "Human sitting on the wheel chair"
-frame, image, inputs = format_prompt_inputs(query)
-response = chain.invoke(inputs)
-
-
-display(Markdown("## Video\n"))
-video = f"RagBasedVideoAnalysis/StockVideos-CC0-frames/{frame.split('/')[1]}.mp4"
-display(Video(video, embed=True, width=300))
-display(Markdown("---"))
-
-display(Markdown("## AI Response\n"))
-display(Markdown(response))
-display(Markdown("---"))
