@@ -22,21 +22,45 @@ This repository implements a **Multimodal Retrieval-Augmented Generation (RAG)**
 ## 🛠 Requirements - requirements.txt
 
 ## 📁 Folder Paths
-Default paths in scripts:
-**ChromaDB storage** → RagBasedVideoAnalysis/mm_vdb
-**Videos (input)** → /home/pgupt60/scripts/CPU_ConvertedVideos/subset/
-**Frames (output)** → RagBasedVideoAnalysis/StockVideos-CC0-frames/
+Default paths in scripts: <br>
+**ChromaDB storage** → RagBasedVideoAnalysis/mm_vdb<br>
+**Videos (input)** → /home/pgupt60/scripts/CPU_ConvertedVideos/subset/<br>
+**Frames (output)** → RagBasedVideoAnalysis/StockVideos-CC0-frames/<br>
 
 
 ## ▶️ Step-by-Step Usage
 #### Step 1 — Extract Frames + Build the Index
 Run this once to create the ChromaDB index.
-python Extract_VideoFrames_ChromaDB.py
+**python Extract_VideoFrames_ChromaDB.py**
 
+##### If you need to extract frames from .mp4:
+* Uncomment the extract_frames(...) section in the script.<br>
+* Set:<br>
+   * video_folder_path → folder with .mp4 files<br>
+   * output_folder_path → folder to save extracted frames<br>
+* Script actions:<br>
+   * Creates a PersistentClient at RagBasedVideoAnalysis/mm_vdb<br>
+   * Creates a video_collection with OpenCLIP embeddings<br>
+* Adds each frame with metadata: {'video_uri': <path_to_video>}<br>
 
+#### Step 2A — Retrieval + GPT-4o (LangChain API Path)
+**export OPENAI_API_KEY=your_key_here**
+**python RAG_Based_ImageRetrieval_From_Video.py**
+* Retrieves the most relevant frames for your query from ChromaDB.
+   * Packages:
+      User query
+      Retrieved text (if available)
+      Base64-encoded images (frame + related image)
+* Sends them to GPT-4o using langchain_openai.ChatOpenAI.
+* Displays:
+   * The source video for the retrieved frame
+   * GPT-4o’s multimodal reasoning output
+ 
 
-
+GPT-4o’s multimodal reasoning output
 Update these inside each script (video_dir, frames_dir, path=) to match your system.
+## 🧠 Extra Inference: Different kind of vector databases <br>
+![VectorDatabases](https://github.com/pallavig702/MultimodalRAG-Based_Retrieval/blob/main/Images/Vectordb.png)
 ## 🧠 Extra Inference: How RAG Works Differently for Text vs. Audio/Image Files <br>
 Yes right! RAG behaves differently for text compared to audio, images, or other large files. Here’s why:<br>
 
