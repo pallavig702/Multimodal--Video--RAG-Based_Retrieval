@@ -31,7 +31,9 @@ Default paths in scripts: <br>
 ## ▶️ Step-by-Step Usage
 #### Step 1 — Extract Frames + Build the Index
 Run this once to create the ChromaDB index.
-**python Extract_VideoFrames_ChromaDB.py**
+```bash
+python Extract_VideoFrames_ChromaDB.py
+```
 
 ##### If you need to extract frames from .mp4:
 * Uncomment the extract_frames(...) section in the script.<br>
@@ -43,9 +45,11 @@ Run this once to create the ChromaDB index.
    * Creates a video_collection with OpenCLIP embeddings<br>
 * Adds each frame with metadata: {'video_uri': <path_to_video>}<br>
 
-#### Step 2A — Retrieval + GPT-4o (LangChain API Path)
-**export OPENAI_API_KEY=your_key_here**
-**python RAG_Based_ImageRetrieval_From_Video.py**
+#### Step 2A — Retrieval + GPT-4o (API Path)
+```bash
+export OPENAI_API_KEY=your_key_here
+python RAG_Based_ImageRetrieval_From_Video.py
+```
 * Retrieves the most relevant frames for your query from ChromaDB.
    * Packages:
       User query
@@ -56,7 +60,25 @@ Run this once to create the ChromaDB index.
    * The source video for the retrieved frame
    * GPT-4o’s multimodal reasoning output
  
+#### Step 2B - Retrieval + Generation via LLaVA-NeXT (open-source path)
+```bash
+python With_LLaVa_Next.py
+```
+* Loads LLaVA-Next with:
+      * 4-bit quantization (bitsandbytes)
+      * FP16 computation
+* Sends retrieved frame(s) to LLaVA-Next for local generation.
+* Always open images with PIL:<br>
+  ```bash
+  from PIL import Image as PILImage
+   image = PILImage.open(frame).convert("RGB")
+  ```
 
+##### Model usage tips:
+* Video variant (LlavaNextVideoProcessor + LlavaNextVideoForConditionalGeneration): pass a sequence of frames (clip).
+* Image variant (LlavaNextProcessor + LlavaNextForConditionalGeneration): pass a single frame.
+
+Always open images with PIL:
 GPT-4o’s multimodal reasoning output
 Update these inside each script (video_dir, frames_dir, path=) to match your system.
 ## 🧠 Extra Inference: Different kind of vector databases <br>
