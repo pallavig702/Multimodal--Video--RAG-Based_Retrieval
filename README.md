@@ -69,10 +69,10 @@ python With_LLaVa_Next.py
       * FP16 computation
 * Sends retrieved frame(s) to LLaVA-Next for local generation.
 * Always open images with PIL:<br>
-  ```bash
-  from PIL import Image as PILImage
-   image = PILImage.open(frame).convert("RGB")
-  ```
+```bash
+from PIL import Image as PILImage
+image = PILImage.open(frame).convert("RGB")
+```
 
 ##### Model usage tips:
 * Video variant (LlavaNextVideoProcessor + LlavaNextVideoForConditionalGeneration): pass a sequence of frames (clip).
