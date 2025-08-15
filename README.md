@@ -38,7 +38,7 @@ python Extract_VideoFrames_ChromaDB.py
 
 Update these inside each script (video_dir, frames_dir, path=) to match your system.
 ## 🧠 Extra Inference: How RAG Works Differently for Text vs. Audio/Image Files <br>
-You're right—RAG behaves differently for text compared to audio, images, or other large files. Here’s why:<br>
+Yes right! RAG behaves differently for text compared to audio, images, or other large files. Here’s why:<br>
 
 ### 1️⃣ How RAG Works for Text<br>
 ✅ Stores Text Data as Embeddings<br>
