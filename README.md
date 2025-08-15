@@ -37,10 +37,10 @@ python Extract_VideoFrames_ChromaDB.py
 
 
 Update these inside each script (video_dir, frames_dir, path=) to match your system.
-# How RAG Works Differently for Text vs. Audio/Image Files <br>
+## 🧠 Extra Inference: How RAG Works Differently for Text vs. Audio/Image Files <br>
 You're right—RAG behaves differently for text compared to audio, images, or other large files. Here’s why:<br>
 
-## 1️⃣ How RAG Works for Text<br>
+### 1️⃣ How RAG Works for Text<br>
 ✅ Stores Text Data as Embeddings<br>
 ✅ Retrieves Relevant Text Passages<br>
 ✅ Uses Retrieved Text to Augment Response<br>
@@ -56,7 +56,7 @@ RAG searches a vector database of text documents.<br>
 #### 🔑 Key Difference:<br>
 For text, RAG doesn’t just return a reference; it actually feeds the retrieved text into the model so it can generate a response based on the information.<br>
 
-## 2️⃣ How RAG Works for Audio, Images, or Large Files<br>
+### 2️⃣ How RAG Works for Audio, Images, or Large Files<br>
 ❌ Does NOT store raw audio/images<br>
 ✅ Stores only Embeddings + Metadata (paths, descriptions, timestamps, etc.)<br>
 ✅ Retrieves File Paths or Metadata<br>
@@ -72,11 +72,11 @@ It retrieves metadata for an audio file:<br>
 #### 🔑 Key Difference:<br>
 For audio, images, or large files, RAG does not use the actual content to generate a response—it just retrieves references to the files.
 
-## Why the Difference?<br>
+### Why the Difference?<br>
 Text is small & easy to process → It can be directly used in the model’s response.<br>
 Audio, images, and videos are large → They are stored externally, and RAG just fetches references.<br>
 Text-based RAG augments generation, while audio/image RAG optimizes retrieval.<br>
-### Final Takeaways<br>
+#### Final Takeaways<br>
 ✅ Text RAG: Retrieves and incorporates text directly into responses.<br>
 ✅ Audio/Image RAG: Retrieves file paths or metadata, not the actual content.<br>
 ✅ RAG Optimizes Retrieval, but Its Role Changes Based on the Data Type.<br>
